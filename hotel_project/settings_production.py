@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'settings',
     'logs',
     'restaurant',
+    'transport',
 ]
 
 MIDDLEWARE = [
