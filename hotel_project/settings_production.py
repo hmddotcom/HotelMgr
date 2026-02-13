@@ -13,6 +13,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = False
 ALLOWED_HOSTS = ['netsama.pythonanywhere.com', 'localhost', '127.0.0.1']
 
+# Custom user model to avoid conflicts
+AUTH_USER_MODEL = 'settings.CustomUser'
+
 # Database configuration - Using SQLite for free accounts
 DATABASES = {
     'default': {
