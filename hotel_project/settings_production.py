@@ -7,7 +7,7 @@ import os
 
 # Security settings for production
 DEBUG = False
-ALLOWED_HOSTS = ['yourusername.pythonanywhere.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['netsama.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 # Database configuration - Using SQLite for free accounts
 DATABASES = {
