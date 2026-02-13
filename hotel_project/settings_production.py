@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'reports',
     'settings',
     'logs',
+    'restaurant',
 ]
 
 MIDDLEWARE = [
