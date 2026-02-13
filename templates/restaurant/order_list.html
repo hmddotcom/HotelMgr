@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Commandes{% endblock %}
+{% block header %}Gestion des Commandes Restaurant{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h3 class="fw-bold">Historique des Commandes</h3>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{% url 'pos' %}" class="btn btn-primary shadow-sm">
+            <i class="fa-solid fa-plus me-2"></i>Nouvelle Commande (POS)
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Client / Table</th>
+                        <th>Agent</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Paiement</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td class="fw-bold">#{{ order.id }}</td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold">{{ order.get_client_name }}</span>
+                                {% if order.numero_table %}
+                                <span class="badge bg-light text-dark border small" style="width: fit-content;">Table {{ order.numero_table }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if order.agent %}
+                            {{ order.agent.get_full_name|default:order.agent.username }}
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ order.date|date:"H:i d/m" }}</td>
+                        <td>
+                            <span
+                                class="badge {% if order.statut == 'paye' %}bg-success{% elif order.statut == 'livre' %}bg-info{% else %}bg-warning text-dark{% endif %}">
+                                {{ order.get_statut_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if order.paiement_effectue %}
+                            <span class="text-success small"><i class="fa-solid fa-circle-check me-1"></i>Payé</span>
+                            {% else %}
+                            <span class="text-danger small"><i class="fa-solid fa-clock me-1"></i>En attente</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">{{ order.total }} {{ app_settings.currency|default:'FCFA' }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="printOrder({{ order.id }})">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-utensils fa-3x mb-3 opacity-25"></i>
+                            <p>Aucune commande enregistrée pour le moment.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Reçu d'impression invisible -->
+<div id="print-content" style="display: none;">
+    <div style="text-align: center; font-family: 'Courier New', Courier, monospace;">
+        <h2 style="margin-bottom: 5px;">{{ app_settings.hotel_name|default:"HOTEL" }}</h2>
+        <p style="font-size: 14px; margin-top: 0;">Restaurant & Bar</p>
+        <hr style="border-top: 1px dashed #000;">
+        <h4 style="margin: 10px 0;">REÇU DE COMMANDE</h4>
+    </div>
+    <div style="font-family: 'Courier New', Courier, monospace; font-size: 14px;">
+        <p>Commande: #<span id="p-order-id"></span></p>
+        <p>Date: <span id="p-date"></span></p>
+        <p>Client: <span id="p-client"></span></p>
+        <p>Table: <span id="p-table"></span></p>
+        <p>Servi par: <span id="p-agent"></span></p>
+        <hr style="border-top: 1px dashed #000;">
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th align="left">Désignation</th>
+                    <th align="center">Qté</th>
+                    <th align="right">Total</th>
+                </tr>
+            </thead>
+            <tbody id="p-items"></tbody>
+        </table>
+        <hr style="border-top: 1px dashed #000;">
+        <div style="text-align: right; font-weight: bold; font-size: 16px;">
+            TOTAL: <span id="p-total"></span> {{ app_settings.currency|default:'FCFA' }}
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <p>Merci de votre visite !</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+
+        header,
+        footer,
+        nav,
+        .sidebar,
+        .main-content>*:not(#print-content) {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        #print-content {
+            display: block !important;
+            width: 80mm !important;
+            margin: 0 auto !important;
+            padding: 10px !important;
+            visibility: visible !important;
+            position: static !important;
+        }
+
+        /* Ensure no extra pages */
+        html,
+        body {
+            height: auto !important;
+            overflow: visible !important;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function printOrder(orderId) {
+        console.log("Demarrage de l'impression pour la commande #" + orderId);
+
+        const apiUrl = "{% url 'order_details_api' 999999 %}".replace('999999', orderId);
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    console.error("Erreur API:", response.status);
+                    throw new Error('Erreur serveur (' + response.status + ')');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    alert("Erreur: " + data.error);
+                    return;
+                }
+
+                const orderIdEl = document.getElementById('p-order-id');
+                const dateEl = document.getElementById('p-date');
+                const clientEl = document.getElementById('p-client');
+                const tableEl = document.getElementById('p-table');
+                const agentEl = document.getElementById('p-agent');
+                const totalEl = document.getElementById('p-total');
+                const itemsTable = document.getElementById('p-items');
+
+                if (!orderIdEl || !itemsTable) {
+                    console.error("Éléments du reçu introuvables dans le DOM");
+                    return;
+                }
+
+                orderIdEl.innerText = data.id.toString().padStart(4, '0');
+                dateEl.innerText = new Date(data.date).toLocaleString('fr-FR');
+                clientEl.innerText = data.client_name;
+                tableEl.innerText = data.numero_table || '-';
+                if (agentEl) agentEl.innerText = data.agent_name;
+                totalEl.innerText = parseFloat(data.total).toLocaleString();
+
+                itemsTable.innerHTML = '';
+                data.items.forEach(item => {
+                    const row = `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td align="center">${item.quantity}</td>
+                            <td align="right">${(item.total).toLocaleString()}</td>
+                        </tr>
+                    `;
+                    itemsTable.innerHTML += row;
+                });
+
+                console.log("Préparation terminée, lancement de window.print()");
+                setTimeout(() => { window.print(); }, 500);
+            })
+            .catch(err => {
+                console.error("Erreur Impression:", err);
+                alert("Impossible d'imprimer: " + err.message);
+            });
+    }
+</script>
+{% endblock %}

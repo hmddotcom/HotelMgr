@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Transport{% endblock %}
+{% block header %}Services de Transport{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between">
+        <h5 class="mb-0">Trajets Réservés</h5>
+        <a href="{% url 'transport_add' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i> Nouveau
+            Trajet</a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Destination</th>
+                    <th>Date</th>
+                    <th>Véhicule</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>{{ req.client.nom }}</td>
+                    <td>{{ req.destination }}</td>
+                    <td>{{ req.date_depart }}</td>
+                    <td>{{ req.vehicule|default:"-" }}</td>
+                    <td>{{ req.get_statut_display }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Aucun trajet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

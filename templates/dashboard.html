@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de Bord - Gestion Hôtelière{% endblock %}
+{% block header %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Bienvenue sur votre tableau de bord</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Statistiques Générales</h6>
+                </div>
+                <div class="card-body">
+                    <p>Ici, nous afficherons bientôt des graphiques et des statistiques sur les réservations, les revenus, etc.</p>
+                    <!-- Exemple de contenu -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-primary text-white h-100">
+                                <div class="card-body">
+                                    <div class="h5">Réservations du jour</div>
+                                    <div class="display-4">5</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-success text-white h-100">
+                                <div class="card-body">
+                                    <div class="h5">Clients enregistrés</div>
+                                    <div class="display-4">120</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Raccourcis</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'reservation_add' %}" class="btn btn-primary btn-block mb-2">Nouvelle Réservation</a>
+                    <a href="{% url 'client_add' %}" class="btn btn-info btn-block">Nouveau Client</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

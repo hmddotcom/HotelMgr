@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{% if object %}Modifier{% else %}Nouvelle{% endif %} Facture - Gestion Hôtelière{% endblock %}
+{% block header %}{% if object %}Modifier la Facture{% else %}Nouvelle Facture{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.management_form }}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.client.id_for_label }}" class="form-label">{{ form.client.label }}</label>
+                    {% render_field form.client class="form-select" %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.reservation.id_for_label }}" class="form-label">{{ form.reservation.label }}</label>
+                    {% render_field form.reservation class="form-select" %}
+                </div>
+            </div>
+
+            <h5 class="mt-4">Lignes de la Facture</h5>
+            <div id="invoice-lines-container">
+                {% for line_form in form.lines %}
+                <div class="row invoice-line-form mb-2">
+                    <div class="col-md-4">
+                        {% render_field line_form.service class="form-select" placeholder="Service" %}
+                    </div>
+                    <div class="col-md-4">
+                        {% render_field line_form.description class="form-control" placeholder="Description" %}
+                    </div>
+                    <div class="col-md-2">
+                        {% render_field line_form.quantite class="form-control" placeholder="Quantité" %}
+                    </div>
+                    <div class="col-md-2">
+                        {% render_field line_form.prix_unitaire class="form-control" placeholder="Prix Unitaire" %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" id="add-invoice-line" class="btn btn-secondary mt-2">Ajouter une ligne</button>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addLineButton = document.getElementById('add-invoice-line');
+    const container = document.getElementById('invoice-lines-container');
+    const totalForms = document.querySelector('input[name="lines-TOTAL_FORMS"]');
+    let formIdx = {{ form.lines.total_form_count }};
+
+    addLineButton.addEventListener('click', function() {
+        const newForm = container.children[0].cloneNode(true);
+        newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formIdx);
+        container.appendChild(newForm);
+        totalForms.value = parseInt(totalForms.value) + 1;
+        formIdx++;
+    });
+});
+</script>
+{% endblock %}

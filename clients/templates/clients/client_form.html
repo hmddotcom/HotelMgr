@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  {% if object %}
+    Modifier le client
+  {% else %}
+    Nouveau client
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h3>
+        {% if object %}
+          Modifier le client : {{ object.nom }}
+        {% else %}
+          Créer un nouveau client
+        {% endif %}
+      </h3>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary mt-3">
+          {% if object %}
+            Enregistrer les modifications
+          {% else %}
+            Créer le client
+          {% endif %}
+        </button>
+        <a href="{% url 'client_list' %}" class="btn btn-secondary mt-3">Annuler</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

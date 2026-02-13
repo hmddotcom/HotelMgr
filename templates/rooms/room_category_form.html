@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} une Catégorie - Gestion Hôtelière{% endblock %}
+{% block header %}{% if form.instance.pk %}Modifier la Catégorie{% else %}Ajouter une Catégorie{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save me-1"></i> Enregistrer
+                </button>
+                <a href="{% url 'room_category_list' %}" class="btn btn-outline-secondary">
+                    <i class="fa-solid fa-times me-1"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Chambres - Gestion Hôtelière{% endblock %}
+{% block header %}Gestion des Chambres{% endblock %}
+
+{% block content %}
+{# Section des filtres #}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get" action="{% url 'room_list' %}">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label for="category" class="form-label">Filtrer par catégorie</label>
+                    <select name="category" id="category" class="form-select">
+                        <option value="">Toutes les catégories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Filtrer par statut</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">Tous les statuts</option>
+                        {% for val, name in status_choices %}
+                        <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fa-solid fa-filter me-1"></i> Filtrer
+                    </button>
+                    <a href="{% url 'room_list' %}" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-times me-1"></i> Effacer
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Section des boutons d'action #}
+<div class="d-flex justify-content-end mb-4">
+    <a href="{% url 'room_category_list' %}" class="btn btn-outline-primary me-2">
+        <i class="fa-solid fa-layer-group me-1"></i> Gérer les Catégories
+    </a>
+    <a href="{% url 'room_add' %}" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Ajouter une chambre
+    </a>
+</div>
+
+{# Grille des cartes de chambres #}
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for room in rooms %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="card-title mb-1">Chambre {{ room.numero }}</h5>
+                    {% with status_class=room.statut|lower %}
+                        <span class="badge 
+                            {% if status_class == 'disponible' %}bg-success-soft text-success{% endif %}
+                            {% if status_class == 'occupee' %}bg-danger-soft text-danger{% endif %}
+                            {% if status_class == 'maintenance' %}bg-warning-soft text-warning{% endif %}
+                        ">{{ room.get_statut_display }}</span>
+                    {% endwith %}
+                </div>
+                <p class="text-muted small mb-3">{{ room.categorie.nom }}</p>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">{{ room.get_cleaning_status_display }}</span>
+                    <a href="{% url 'room_edit' room.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1">
+                        <i class="fa-solid fa-pencil small"></i> Modifier
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card text-center py-5">
+            <div class="card-body">
+                <p class="text-muted">Aucune chambre ne correspond à vos critères.</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{# Styles pour les badges soft #}
+<style>
+    .bg-success-soft { background-color: rgba(40, 167, 69, 0.1); }
+    .text-success { color: #28a745 !important; }
+    .bg-danger-soft { background-color: rgba(220, 53, 69, 0.1); }
+    .text-danger { color: #dc3545 !important; }
+    .bg-warning-soft { background-color: rgba(255, 193, 7, 0.1); }
+    .text-warning { color: #ffc107 !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Modifier{% else %}Nouveau{% endif %} Nettoyage - Gestion Hôtelière{% endblock %}
+{% block header %}{% if object %}Modifier le Nettoyage{% else %}Nouveau Nettoyage{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">{% if object %}Modifier{% else %}Créer{% endif %} une Demande de Nettoyage</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'room_cleaning_list' %}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Retour
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save me-2"></i>Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

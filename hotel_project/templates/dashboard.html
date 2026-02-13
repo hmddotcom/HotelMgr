@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Gestion Hôtelière{% endblock %}
+{% block header %}Vue Globale{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <!-- KPI Cards -->
+    <div class="col-md-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Chambres Occupées</h6>
+                        <h2 class="mb-0">12 / 30</h2>
+                    </div>
+                    <i class="fa-solid fa-bed fa-2x opacity-50"></i>
+                </div>
+                <small class="text-white-50">40% d'occupation</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Revenu du Jour</h6>
+                        <h2 class="mb-0">850 €</h2>
+                    </div>
+                    <i class="fa-solid fa-euro-sign fa-2x opacity-50"></i>
+                </div>
+                <small class="text-white-50">+15% vs hier</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Réservations (Auj)</h6>
+                        <h2 class="mb-0">5</h2>
+                    </div>
+                    <i class="fa-regular fa-calendar-check fa-2x opacity-50"></i>
+                </div>
+                <small class="text-dark-50">2 Check-ins restants</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Plaintes</h6>
+                        <h2 class="mb-0">1</h2>
+                    </div>
+                    <i class="fa-solid fa-triangle-exclamation fa-2x opacity-50"></i>
+                </div>
+                <small class="text-white-50">Action requise</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Recent Reservations -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold">Dernières Réservations</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Client</th>
+                            <th>Dates</th>
+                            <th>Chambre</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Jean Dupont</td>
+                            <td>01/02 - 05/02</td>
+                            <td>101 (Luxe)</td>
+                            <td><span class="badge bg-success status-badge">Confirmée</span></td>
+                        </tr>
+                        <tr>
+                            <td>Marie Curie</td>
+                            <td>02/02 - 03/02</td>
+                            <td>205 (Standard)</td>
+                            <td><span class="badge bg-warning text-dark status-badge">En attente</span></td>
+                        </tr>
+                        <tr>
+                            <td>Albert Einstein</td>
+                            <td>10/02 - 15/02</td>
+                            <td>301 (Suite)</td>
+                            <td><span class="badge bg-secondary status-badge">Annulée</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold">Actions Rapides</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary text-start"><i class="fa-solid fa-plus me-2"></i> Nouvelle
+                        Réservation</button>
+                    <button class="btn btn-outline-success text-start"><i class="fa-solid fa-user-plus me-2"></i>
+                        Enregistrer Client</button>
+                    <button class="btn btn-outline-dark text-start"><i class="fa-solid fa-bell-concierge me-2"></i>
+                        Commande Resto</button>
+                    <button class="btn btn-outline-secondary text-start"><i class="fa-solid fa-file-invoice me-2"></i>
+                        Créer Facture</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

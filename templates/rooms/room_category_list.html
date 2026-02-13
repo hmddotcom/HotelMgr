@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Catégories de Chambres - Gestion Hôtelière{% endblock %}
+{% block header %}Gestion des Catégories de Chambres{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h4 class="fw-bold text-primary mb-1">Liste des Catégories</h4>
+        <p class="text-muted small">Gérez les types de chambres disponibles.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'room_category_add' %}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus me-1"></i> Ajouter une catégorie
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-nowrap">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Nom</th>
+                        <th scope="col">Description</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>{{ category.nom }}</td>
+                        <td>{{ category.description|default:"-" }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'room_category_edit' category.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1 me-1">
+                                <i class="fa-solid fa-pencil small"></i>
+                            </a>
+                            <a href="{% url 'room_category_delete' category.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1">
+                                <i class="fa-solid fa-trash-alt small"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">Aucune catégorie trouvée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

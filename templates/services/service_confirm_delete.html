@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmer la Suppression - Gestion Hôtelière{% endblock %}
+{% block header %}Supprimer le Service{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <p>Êtes-vous sûr de vouloir supprimer le service "<strong>{{ object.name }}</strong>" ?</p>
+        <p class="text-danger">Cette action est irréversible.</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+            <a href="{% url 'service_list' %}" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

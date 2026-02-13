@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails de {{ client.nom }} - Gestion Hôtelière{% endblock %}
+{% block header %}Détails de {{ client.nom }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0">Informations du Client</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Nom :</strong> {{ client.nom }}</p>
+                <p><strong>Email :</strong> {{ client.email|default:"Non spécifié" }}</p>
+                <p><strong>Téléphone :</strong> {{ client.telephone|default:"Non spécifié" }}</p>
+                <p><strong>Adresse :</strong> {{ client.adresse|default:"Non spécifiée" }}</p>
+                <p><strong>Solde :</strong> <span class="badge {% if client.solde > 0 %}bg-danger{% elif client.solde < 0 %}bg-warning{% else %}bg-success{% endif %}">{{ client.solde }} {{ app_settings.currency_symbol }}</span></p>
+            </div>
+            <div class="col-md-6">
+                {% if client.piece_identite %}
+                    <p><strong>Pièce d'identité :</strong></p>
+                    <img src="{{ client.piece_identite.url }}" alt="Pièce d'identité de {{ client.nom }}" class="img-fluid rounded" style="max-height: 200px;">
+                {% else %}
+                    <p><strong>Pièce d'identité :</strong> Non fournie</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Réservations</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            {% for res in reservations %}
+                            <tr>
+                                <td>Ch. {{ res.chambre.numero }}</td>
+                                <td>{{ res.date_debut|date:"d/m/y" }} - {{ res.date_fin|date:"d/m/y" }}</td>
+                                <td><span class="badge bg-primary">{{ res.get_statut_display }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">Aucune réservation.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Factures</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            {% for inv in invoices %}
+                            <tr>
+                                <td>Facture #{{ inv.id }}</td>
+                                <td>{{ inv.created_at|date:"d/m/Y" }}</td>
+                                <td class="text-end fw-bold">{{ inv.total_amount }} {{ app_settings.currency_symbol }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">Aucune facture.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

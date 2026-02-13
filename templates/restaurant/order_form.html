@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Nouvelle Commande{% endblock %}
+{% block header %}Prendre une Commande{% endblock %}
+
+{% block content %}
+<div class="card col-md-8 mx-auto">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Client</label>
+                {{ form.client }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Ou Chambre</label>
+                {{ form.chambre }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Statut</label>
+                {{ form.statut }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Créer Commande</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

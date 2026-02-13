@@ -1,0 +1,557 @@
+{% extends 'base.html' %}
+
+{% block title %}Point de Vente (POS) - Restaurant{% endblock %}
+{% block header %}Interface POS Restaurant{% endblock %}
+
+{% block content %}
+<div class="container-fluid h-100 p-0">
+    <!-- Initial Screen: Choice -->
+    <div id="screen-start" class="row justify-content-center align-items-center h-100">
+        <div class="col-md-8">
+            <div class="row g-4 text-center">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm hover-lift cursor-pointer p-5"
+                        onclick="startFlow('resident')">
+                        <div class="card-body">
+                            <i class="fa-solid fa-bed fa-5x mb-4 text-primary"></i>
+                            <h3 class="fw-bold">Client Résident</h3>
+                            <p class="text-muted">Facturation directe sur la chambre de l'hôtel</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm hover-lift cursor-pointer p-5"
+                        onclick="startFlow('passage')">
+                        <div class="card-body">
+                            <i class="fa-solid fa-person-walking fa-5x mb-4 text-success"></i>
+                            <h3 class="fw-bold">Client de Passage</h3>
+                            <p class="text-muted">Vente directe au comptoir ou en terrasse</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Selection Screen -->
+    <div id="screen-rooms" class="display-none h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button class="btn btn-outline-secondary" onclick="showScreen('start')">
+                <i class="fa-solid fa-arrow-left me-2"></i>Retour
+            </button>
+            <h3 class="fw-bold mb-0">Sélectionner une Chambre Active</h3>
+        </div>
+        <div class="row g-3">
+            {% for res in active_reservations %}
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 cursor-pointer hover-shadow"
+                    onclick="selectRoom('{{ res.id }}', '{{ res.chambre.numero }}', '{{ res.client.get_full_name|escapejs }}')">
+                    <div class="card-body text-center p-4">
+                        <div class="h2 fw-bold text-primary mb-1">{{ res.chambre.numero }}</div>
+                        <div class="fw-bold text-dark">{{ res.client.get_full_name }}</div>
+                        <small class="text-muted">ID: {{ res.code }}</small>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">Aucune réservation active en ce moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main POS Screen -->
+    <div id="screen-pos" class="display-none h-100">
+        <div class="row g-3 h-100">
+            <!-- Items Area -->
+            <div class="col-md-7">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-0">
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-light me-3" onclick="goBackFromPOS()">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <h5 class="mb-0 fw-bold" id="pos-title">Menu</h5>
+                        </div>
+                        <div class="d-flex gap-2" id="category-filters">
+                            <button class="btn btn-sm btn-outline-primary filter-btn active"
+                                data-category="all">Tous</button>
+                            {% for cat in categories %}
+                            <button class="btn btn-sm btn-outline-primary filter-btn" data-category="{{ cat }}">{{ cat }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-body overflow-auto" style="max-height: 75vh;">
+                        <div class="row g-3" id="menu-items-grid">
+                            {% for item in menu_items %}
+                            <div class="col-md-4 menu-item-card" data-category="{{ item.categorie }}">
+                                <div class="card h-100 border-light hover-shadow cursor-pointer"
+                                    onclick="addToCart('{{ item.id }}', '{{ item.nom|escapejs }}', '{{ item.prix }}')">
+                                    {% if item.image %}
+                                    <img src="{{ item.image.url }}" class="card-img-top"
+                                        style="height: 120px; object-fit: cover;">
+                                    {% endif %}
+                                    <div class="card-body p-3">
+                                        <h6 class="fw-bold text-truncate mb-1">{{ item.nom }}</h6>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-primary fw-bold">{{ item.prix }} {{ app_settings.currency|default:'FCFA' }}</span>
+                                            <i class="fa-solid fa-plus-circle text-muted"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart and Pending Orders Area -->
+            <div class="col-md-5">
+                <div class="d-flex flex-column h-100">
+                    <!-- Cart Area -->
+                    <div class="card border-0 shadow-sm border-top border-primary border-4 mb-3">
+                        <div id="cart-selection-info" class="p-3 bg-primary-subtle border-bottom display-none">
+                            <small class="text-uppercase text-muted fw-bold ls-wide d-block mb-1">Service pour :</small>
+                            <h6 class="mb-0 fw-bold" id="selected-info-text">Chambre 101 - Jean Paul</h6>
+                        </div>
+                        <div class="card-body d-flex flex-column p-0">
+                            <div id="cart-items" class="flex-grow-1 overflow-auto p-3"
+                                style="max-height: 25vh; min-height: 200px;">
+                                <div class="text-center text-muted mt-4 opacity-50">
+                                    <i class="fa-solid fa-cart-shopping fa-3x mb-3"></i>
+                                    <p>Panier vide</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-light p-3 border-top mt-auto">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h5 class="mb-0 fw-bold">Total:</h5>
+                                    <h5 id="cart-total" class="mb-0 text-primary fw-bold">0</h5>
+                                </div>
+                                <hr class="my-2">
+                                <div id="pos-fields" class="mb-2">
+                                    <div id="fields-passage">
+                                        <div class="mb-2">
+                                            <label class="form-label small fw-bold">Nom du Client (Optionnel)</label>
+                                            <input type="text" id="customer-name" class="form-control form-control-sm"
+                                                placeholder="Ex: M. Diallo">
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label small fw-bold">Mode de Paiement</label>
+                                            <select id="payment-method-passage" class="form-select form-select-sm">
+                                                <option value="cash">Passage Simple (Espèces)</option>
+                                                <option value="abonnee">Client Abonné</option>
+                                                <option value="carte">Carte Bancaire</option>
+                                                <option value="mobile">Mobile Money</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="fields-resident" class="display-none">
+                                        <div class="alert alert-info py-2 small border-0">
+                                            <i class="fa-solid fa-circle-info me-2"></i>Facturé sur la chambre
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">N° Table / Emplacement</label>
+                                        <input type="text" id="table-number" class="form-control form-control-sm"
+                                            placeholder="Ex: T5">
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary btn-lg w-100 fw-bold py-2 shadow-sm mb-1"
+                                    id="btn-validate" onclick="validateOrder()" disabled>
+                                    VALIDER
+                                </button>
+                                <button class="btn btn-outline-dark w-100 fw-bold py-2 display-none" id="btn-print"
+                                    onclick="printReceipt()">
+                                    <i class="fa-solid fa-print me-2"></i>IMPRIMER
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Orders Area -->
+                    <div class="card border-0 shadow-sm flex-grow-1">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="mb-0 fw-bold"><i
+                                    class="fa-solid fa-hourglass-half me-2 text-warning"></i>Commandes en Attente</h5>
+                        </div>
+                        <div id="pending-orders-list" class="card-body overflow-auto p-3" style="max-height: 40vh;">
+                            <div class="text-center text-muted mt-4 opacity-50">
+                                <i class="fa-solid fa-check-double fa-3x mb-3"></i>
+                                <p>Aucune commande en préparation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reçu invisible pour impression -->
+<div id="receipt-print" style="display: none;">
+    <div style="text-align: center; font-family: 'Courier New', Courier, monospace;">
+        <h2 style="margin-bottom: 5px;">{{ app_settings.hotel_name|default:"HOTEL" }}</h2>
+        <p style="font-size: 14px; margin-top: 0;">Restaurant & POS</p>
+        <hr style="border-top: 1px dashed #000;">
+        <h4 style="margin: 10px 0;">JUSTIFICATIF DE COMMANDE</h4>
+    </div>
+    <div style="font-family: 'Courier New', Courier, monospace; font-size: 14px;">
+        <p>Reçu N°: <span id="p-order-id"></span></p>
+        <p>Date: <span id="p-date"></span></p>
+        <p>Client: <span id="p-client"></span></p>
+        <p>Servi par: <span id="p-agent"></span></p>
+        <hr style="border-top: 1px dashed #000;">
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th align="left">Item</th>
+                    <th align="center">Qté</th>
+                    <th align="right">Total</th>
+                </tr>
+            </thead>
+            <tbody id="p-items"></tbody>
+        </table>
+        <hr style="border-top: 1px dashed #000;">
+        <div style="text-align: right; font-weight: bold; font-size: 16px;">
+            TOTAL: <span id="p-total"></span>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <p>Merci de votre visite !</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- State Management ---
+    let orderType = null; // 'resident' or 'passage'
+    let reservationId = null;
+    let roomNumber = null;
+    let clientName = null;
+    let cart = [];
+    let lastOrderId = null;
+
+    const CURRENCY = "{{ app_settings.currency|default:'FCFA' }}";
+
+    // --- UI Navigation ---
+    function showScreen(screenName) {
+        ['start', 'rooms', 'pos'].forEach(id => {
+            const el = document.getElementById(`screen-${id}`);
+            if (el) el.classList.add('display-none');
+        });
+        const target = document.getElementById(`screen-${screenName}`);
+        if (target) target.classList.remove('display-none');
+    }
+
+    function startFlow(type) {
+        orderType = type;
+        if (type === 'resident') {
+            showScreen('rooms');
+        } else {
+            document.getElementById('pos-title').innerText = "Commande - Client de Passage";
+            document.getElementById('cart-selection-info').classList.add('display-none');
+            document.getElementById('fields-resident').classList.add('display-none');
+            document.getElementById('fields-passage').classList.remove('display-none');
+            showScreen('pos');
+            fetchPendingOrders();
+            updateCartView();
+        }
+    }
+
+    function selectRoom(resId, roomNum, client) {
+        orderType = 'resident'; // Ensure orderType is set
+        reservationId = resId;
+        roomNumber = roomNum;
+        clientName = client;
+        document.getElementById('pos-title').innerText = `Commande - Ch. ${roomNum} (${client})`;
+        document.getElementById('selected-info-text').innerText = `Chambre ${roomNum} - ${client}`;
+        document.getElementById('cart-selection-info').classList.remove('display-none');
+        document.getElementById('fields-passage').classList.add('display-none');
+        document.getElementById('fields-resident').classList.remove('display-none');
+        showScreen('pos');
+        fetchPendingOrders();
+        updateCartView();
+    }
+
+    function goBackFromPOS() {
+        resetPOS();
+        if (orderType === 'resident') {
+            showScreen('rooms');
+        } else {
+            showScreen('start');
+        }
+    }
+
+    function resetPOS() {
+        cart = [];
+        lastOrderId = null;
+        reservationId = null;
+        updateCartView();
+        document.getElementById('customer-name').value = '';
+        document.getElementById('table-number').value = '';
+        document.getElementById('btn-validate').classList.remove('display-none');
+        document.getElementById('btn-print').classList.add('display-none');
+        document.getElementById('btn-validate').disabled = true;
+        document.getElementById('btn-validate').innerHTML = "VALIDER";
+        document.getElementById('cart-selection-info').classList.add('display-none');
+        document.getElementById('pos-title').innerText = "Menu";
+    }
+
+    function fetchPendingOrders() {
+        fetch("{% url 'get_pending_orders_api' %}")
+            .then(response => {
+                if (!response.ok) return response.json().then(e => { throw new Error(e.error) });
+                return response.json();
+            })
+            .then(data => {
+                const list = document.getElementById('pending-orders-list');
+                if (!list) return;
+                if (data.length === 0) {
+                    list.innerHTML = `<div class="text-center text-muted mt-4 opacity-50"><i class="fa-solid fa-check-double fa-3x mb-3"></i><p>Aucune commande</p></div>`;
+                    return;
+                }
+                list.innerHTML = '';
+                data.forEach(order => {
+                    const card = `
+                        <div class="card mb-2 shadow-sm border-start border-4 border-warning">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold">#${order.id} - ${order.client}</h6>
+                                    <div>
+                                        <span class="badge bg-warning text-dark me-2">${order.total.toLocaleString()} ${CURRENCY}</span>
+                                        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="printReceipt(${order.id})">
+                                            <i class="fa-solid fa-print"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block">
+                                    <i class="fa-solid fa-clock me-1"></i> ${order.date}
+                                    <i class="fa-solid fa-user ms-2 me-1"></i> ${order.agent}
+                                </small>
+                            </div>
+                        </div>
+                    `;
+                    list.innerHTML += card;
+                });
+            })
+            .catch(err => {
+                console.error("Erreur commandes:", err);
+            });
+    }
+
+    setInterval(fetchPendingOrders, 15000);
+
+    // --- Cart Logic ---
+    function addToCart(id, name, price) {
+        const item = cart.find(i => i.id === id);
+        if (item) item.qty++;
+        else cart.push({ id, name, price: parseFloat(price), qty: 1 });
+        updateCartView();
+    }
+
+    function updateCartView() {
+        const div = document.getElementById('cart-items');
+        const h5 = document.getElementById('cart-total');
+        const btnValidate = document.getElementById('btn-validate');
+
+        let total = 0;
+        if (cart.length === 0) {
+            div.innerHTML = `<div class="text-center text-muted mt-4 opacity-50"><i class="fa-solid fa-cart-shopping fa-3x mb-3"></i><p>Panier vide</p></div>`;
+            h5.innerText = `0 ${CURRENCY}`;
+            if (btnValidate) btnValidate.disabled = true;
+            return;
+        }
+
+        div.innerHTML = '';
+        if (btnValidate) btnValidate.disabled = false;
+
+        cart.forEach((item, idx) => {
+            const price = parseFloat(item.price) || 0;
+            total += price * item.qty;
+            const el = document.createElement('div');
+            el.className = 'd-flex justify-content-between align-items-center mb-3';
+            el.innerHTML = `
+                <div>
+                    <h6 class="mb-0">${item.name}</h6>
+                    <small class="text-muted">${price.toLocaleString()} ${CURRENCY}</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateQty(${idx}, -1)">-</button>
+                    <span class="mx-2 fw-bold">${item.qty}</span>
+                    <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateQty(${idx}, 1)">+</button>
+                </div>`;
+            div.appendChild(el);
+        });
+        h5.innerText = `${total.toLocaleString()} ${CURRENCY}`;
+    }
+
+    function updateQty(idx, delta) {
+        cart[idx].qty += delta;
+        if (cart[idx].qty <= 0) cart.splice(idx, 1);
+        updateCartView();
+    }
+
+    // --- Validation & Print ---
+    function validateOrder() {
+        if (cart.length === 0) return alert("Panier vide");
+        const btn = document.getElementById('btn-validate');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Validation...';
+
+        const payload = {
+            type_commande: orderType,
+            items: cart,
+            table: document.getElementById('table-number').value,
+            customer_name: document.getElementById('customer-name').value,
+            payment_method: orderType === 'resident' ? 'chambre' : document.getElementById('payment-method-passage').value,
+            reservation_id: reservationId
+        };
+
+        console.log("Validation commande - Payload:", payload);
+
+        fetch("{% url 'place_order_api' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(r => {
+                if (!r.ok) {
+                    console.error("Réponse serveur non OK:", r.status);
+                    return r.text().then(text => { throw new Error(`Erreur serveur (${r.status}): ${text.substring(0, 100)}`) });
+                }
+                return r.json();
+            })
+            .then(data => {
+                console.log("Réponse validation:", data);
+                if (data.success) {
+                    lastOrderId = data.order_id;
+                    document.getElementById('btn-validate').classList.add('display-none');
+                    document.getElementById('btn-print').classList.remove('display-none');
+                    alert("Commande validée !");
+                    fetchPendingOrders();
+                } else {
+                    alert("Erreur: " + data.error);
+                    btn.disabled = false;
+                    btn.innerHTML = "VALIDER";
+                }
+            })
+            .catch(err => {
+                console.error("Erreur Fetch validateOrder:", err);
+                alert("Erreur technique: " + err.message);
+                btn.disabled = false;
+                btn.innerHTML = "VALIDER";
+            });
+    }
+
+    function printReceipt(orderIdToPrint = null) {
+        const orderId = orderIdToPrint || lastOrderId;
+        if (!orderId) return;
+
+        fetch(`/api/order/${orderId}/`)
+            .then(r => {
+                if (!r.ok) throw new Error("Erreur lors de la récupération des détails");
+                return r.json();
+            })
+            .then(data => {
+                if (!data.success) return alert(data.error);
+
+                document.getElementById('p-order-id').innerText = data.id.toString().padStart(4, '0');
+                document.getElementById('p-date').innerText = new Date(data.date).toLocaleString('fr-FR');
+                document.getElementById('p-client').innerText = data.client_name;
+                document.getElementById('p-agent').innerText = data.agent_name;
+
+                const tbody = document.getElementById('p-items');
+                tbody.innerHTML = '';
+                data.items.forEach(item => {
+                    tbody.innerHTML += `<tr><td>${item.name}</td><td align="center">${item.quantity}</td><td align="right">${(item.total).toLocaleString()}</td></tr>`;
+                });
+
+                document.getElementById('p-total').innerText = `${data.total.toLocaleString()} ${CURRENCY}`;
+                window.print();
+
+                if (!orderIdToPrint) {
+                    setTimeout(() => { resetPOS(); showScreen('start'); }, 1000);
+                }
+            })
+            .catch(err => {
+                console.error("Erreur Impression:", err);
+                alert("Erreur d'impression: " + err.message);
+            });
+    }
+
+    // --- Filters ---
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const cat = this.dataset.category;
+            document.querySelectorAll('.menu-item-card').forEach(c => {
+                c.style.display = (cat === 'all' || c.dataset.category === cat) ? 'block' : 'none';
+            });
+        });
+    });
+</script>
+
+<style>
+    .display-none {
+        display: none !important;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .hover-lift {
+        transition: transform 0.2s;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+    }
+
+    .hover-shadow:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    @media print {
+
+        header,
+        footer,
+        nav,
+        .sidebar,
+        .main-content>*:not(#receipt-print) {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        #receipt-print {
+            display: block !important;
+            width: 80mm !important;
+            margin: 0 auto !important;
+            padding: 10px !important;
+            visibility: visible !important;
+            position: static !important;
+        }
+
+        /* Ensure no extra pages */
+        html,
+        body {
+            height: auto !important;
+            overflow: visible !important;
+        }
+    }
+</style>
+{% endblock %}

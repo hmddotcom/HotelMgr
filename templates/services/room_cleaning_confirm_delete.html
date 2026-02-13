@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer Nettoyage - Gestion Hôtelière{% endblock %}
+{% block header %}Supprimer la Demande de Nettoyage{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 text-danger">Confirmation de suppression</h5>
+    </div>
+    <div class="card-body">
+        <p>Êtes-vous sûr de vouloir supprimer la demande de nettoyage pour la chambre <strong>{{ object.chambre.numero }}</strong> ?</p>
+        <p class="text-muted">Cette action est irréversible.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'room_cleaning_list' %}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fa-solid fa-trash me-2"></i>Supprimer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

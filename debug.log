@@ -1,0 +1,10 @@
+INFO:root:--- [DEBUG] POST request received on general_settings_view ---
+INFO:root:--- [DEBUG] POST data: <QueryDict: {'csrfmiddlewaretoken': ['rv10vCD1PJoQqnVvMxWB7jxCwucN1oRTW9w1nUKFOMBu9EPd6XWdao309WeMTWdg'], 'hotel_name': ['K-Haime'], 'contact_email': [''], 'contact_phone': [''], 'currency': ['USD'], 'address': [''], 'timezone': ['Etc/GMT-2']}>
+INFO:root:--- [DEBUG] New hotel name from POST: K-Haime
+INFO:root:--- [DEBUG] Hotel name before save: K-Haime
+INFO:root:--- [DEBUG] settings_obj.save() called. ---
+INFO:root:--- [DEBUG] Hotel name after reloading from DB: K-Haime ---
+INFO:django.utils.autoreload:C:\xampp83\htdocs\Hotelerie\settings\models.py changed, reloading.
+INFO:django.utils.autoreload:C:\xampp83\htdocs\Hotelerie\settings\models.py changed, reloading.
+INFO:django.utils.autoreload:C:\xampp83\htdocs\Hotelerie\settings\views.py changed, reloading.
+INFO:django.utils.autoreload:C:\xampp83\htdocs\Hotelerie\settings\views.py changed, reloading.

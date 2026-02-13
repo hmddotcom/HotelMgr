@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card col-md-8 mx-auto">
+    <div class="card-body">
+        <h5 class="card-title mb-4">Réserver un Transport</h5>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

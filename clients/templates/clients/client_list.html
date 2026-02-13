@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Clients{% endblock %}
+
+{% block header %}
+<div class="d-flex justify-content-between align-items-center">
+    <span>Gestion des Clients</span>
+    <a href="{% url 'client_add' %}" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-2"></i> Nouveau Client
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nom Client</th>
+                    <th>Téléphone</th>
+                    <th>Date d'entrée</th>
+                    <th>Date de sortie</th>
+                    <th>Chambre</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>{{ client.nom }}</td>
+                    <td>{{ client.telephone|default:"-" }}</td>
+                    <td>
+                        {% with last_reservation=client.reservation_set.last %}
+                            {% if last_reservation %}
+                                {{ last_reservation.date_debut|date:"d/m/Y" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with last_reservation=client.reservation_set.last %}
+                            {% if last_reservation %}
+                                {{ last_reservation.date_fin|date:"d/m/Y" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with last_reservation=client.reservation_set.last %}
+                            {% if last_reservation %}
+                                {{ last_reservation.chambre.numero }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with last_reservation=client.reservation_set.last %}
+                            {% if last_reservation %}
+                                <span class="badge bg-info">{{ last_reservation.get_statut_display }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <a href="{% url 'client_detail' client.pk %}" class="btn btn-sm btn-outline-info">
+                            <i class="fa-solid fa-eye"></i> Voir
+                        </a>
+                        <a href="{% url 'client_edit' client.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa-solid fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">Aucun client trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

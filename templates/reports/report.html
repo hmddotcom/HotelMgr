@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Rapports Financiers{% endblock %}
+{% block header %}Rapports Financiers{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Revenus Totaux</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ total_revenue }} {{ app_settings.currency|default:"FCFA" }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-header">Montant Total Dû</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ total_due }} {{ app_settings.currency|default:"FCFA" }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

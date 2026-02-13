@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Logs d'Activité{% endblock %}
+{% block header %}Historique & Événements{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fa-solid fa-list-check me-2"></i> Filtres</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Type d'événement</label>
+                <select name="event_type" class="form-select">
+                    <option value="">Tous</option>
+                    {% for code, label in event_types %}
+                    <option value="{{ code }}" {% if request.GET.event_type == code %}selected{% endif %}>{{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Module</label>
+                <select name="module" class="form-select">
+                    <option value="">Tous</option>
+                    {% for code, label in modules %}
+                    <option value="{{ code }}" {% if request.GET.module == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Sévérité</label>
+                <select name="severity" class="form-select">
+                    <option value="">Toutes</option>
+                    {% for code, label in severities %}
+                    <option value="{{ code }}" {% if request.GET.severity == code %}selected{% endif %}>{{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Date début</label>
+                <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Date fin</label>
+                <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+            </div>
+            <div class="col-md-8">
+                <label class="form-label">Recherche</label>
+                <input type="text" name="search" class="form-control"
+                    placeholder="Rechercher dans les actions et détails..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-fill"><i class="fa-solid fa-filter me-2"></i>
+                    Filtrer</button>
+                <a href="{% url 'log_list' %}" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+                <a href="{% url 'log_export' %}?{{ filters.urlencode }}" class="btn btn-success"><i
+                        class="fa-solid fa-file-csv me-2"></i> Export CSV</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date/Heure</th>
+                        <th>Utilisateur</th>
+                        <th>Type</th>
+                        <th>Module</th>
+                        <th>Action</th>
+                        <th>Sévérité</th>
+                        <th>Détails</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="text-nowrap small">{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                        <td>
+                            {% if log.user %}
+                            <span class="badge bg-secondary">{{ log.user.username }}</span>
+                            {% else %}
+                            <span class="badge bg-dark">Système</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.event_type == 'create' %}<span class="badge bg-success">{{
+                                log.get_event_type_display }}</span>
+                            {% elif log.event_type == 'update' %}<span class="badge bg-info">{{
+                                log.get_event_type_display }}</span>
+                            {% elif log.event_type == 'delete' %}<span class="badge bg-danger">{{
+                                log.get_event_type_display }}</span>
+                            {% elif log.event_type == 'login' %}<span class="badge bg-primary">{{
+                                log.get_event_type_display }}</span>
+                            {% else %}<span class="badge bg-secondary">{{ log.get_event_type_display }}</span>{% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark">{{ log.get_module_display }}</span></td>
+                        <td>{{ log.action }}</td>
+                        <td>
+                            {% if log.severity == 'critical' %}<span class="badge bg-danger">{{ log.get_severity_display
+                                }}</span>
+                            {% elif log.severity == 'error' %}<span class="badge bg-warning text-dark">{{
+                                log.get_severity_display }}</span>
+                            {% elif log.severity == 'warning' %}<span class="badge bg-warning">{{
+                                log.get_severity_display }}</span>
+                            {% else %}<span class="badge bg-info">{{ log.get_severity_display }}</span>{% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'log_detail' log.pk %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">Aucun log trouvé.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if is_paginated %}
+    <div class="card-footer bg-white">
+        <nav>
+            <ul class="pagination mb-0 justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1&{{ filters.urlencode }}">Première</a></li>
+                <li class="page-item"><a class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}&{{ filters.urlencode }}">Précédent</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} sur {{
+                        page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link"
+                        href="?page={{ page_obj.next_page_number }}&{{ filters.urlencode }}">Suivant</a></li>
+                <li class="page-item"><a class="page-link"
+                        href="?page={{ page_obj.paginator.num_pages }}&{{ filters.urlencode }}">Dernière</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

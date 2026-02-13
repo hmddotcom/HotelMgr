@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Détails du Log{% endblock %}
+{% block header %}Détails de l'Événement{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Informations Générales</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="200">Date/Heure:</th>
+                        <td>{{ log.timestamp|date:"l d F Y à H:i:s" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Utilisateur:</th>
+                        <td>
+                            {% if log.user %}
+                            {{ log.user.get_full_name|default:log.user.username }}
+                            {% else %}
+                            <em>Système</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Type d'événement:</th>
+                        <td><span class="badge bg-primary">{{ log.get_event_type_display }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Module:</th>
+                        <td><span class="badge bg-secondary">{{ log.get_module_display }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Sévérité:</th>
+                        <td>
+                            {% if log.severity == 'critical' %}<span class="badge bg-danger">{{ log.get_severity_display
+                                }}</span>
+                            {% elif log.severity == 'error' %}<span class="badge bg-warning">{{ log.get_severity_display
+                                }}</span>
+                            {% else %}<span class="badge bg-info">{{ log.get_severity_display }}</span>{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Action:</th>
+                        <td class="fw-bold">{{ log.action }}</td>
+                    </tr>
+                    {% if log.object_repr %}
+                    <tr>
+                        <th>Objet concerné:</th>
+                        <td>{{ log.object_type }} - {{ log.object_repr }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if log.ip_address %}
+                    <tr>
+                        <th>Adresse IP:</th>
+                        <td><code>{{ log.ip_address }}</code></td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        {% if log.details %}
+        <div class="card mt-3">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Détails</h5>
+            </div>
+            <div class="card-body">
+                <pre class="mb-0">{{ log.details }}</pre>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        {% if log.old_values or log.new_values %}
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Modifications</h5>
+            </div>
+            <div class="card-body">
+                {% if log.old_values %}
+                <h6 class="text-danger">Anciennes valeurs:</h6>
+                <pre class="small bg-light p-2 rounded">{{ log.old_values|pprint }}</pre>
+                {% endif %}
+
+                {% if log.new_values %}
+                <h6 class="text-success mt-3">Nouvelles valeurs:</h6>
+                <pre class="small bg-light p-2 rounded">{{ log.new_values|pprint }}</pre>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <a href="{% url 'log_list' %}" class="btn btn-secondary w-100">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

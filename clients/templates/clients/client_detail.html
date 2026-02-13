@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Détail du Client - {{ client.nom }}{% endblock %}
+
+{% block header %}
+    <h2>Dossier Client : {{ client.nom }}</h2>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Client Info -->
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h4>Informations Personnelles</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Contact :</strong> {{ client.contact }}</p>
+                <p><strong>Adresse :</strong> {{ client.adresse|default:"Non renseignée" }}</p>
+                <p><strong>Solde :</strong> <span class="badge bg-{% if client.solde > 0 %}danger{% else %}success{% endif %}">{{ client.solde }} €</span></p>
+                {% if client.piece_identite %}
+                    <a href="{{ client.piece_identite.url }}" target="_blank">Voir la pièce d'identité</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservations -->
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4>Réservations</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for resa in reservations %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                Chambre {{ resa.chambre.numero }} du {{ resa.date_debut|date:"d/m/Y" }} au {{ resa.date_fin|date:"d/m/Y" }}
+                            </div>
+                            <span class="badge bg-info">{{ resa.get_statut_display }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">Aucune réservation pour ce client.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Invoices -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4>Factures</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for invoice in invoices %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                Facture #{{ invoice.id }} - Total : {{ invoice.total }} €
+                            </div>
+                            <span class="badge bg-warning">{{ invoice.get_statut_display }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">Aucune facture pour ce client.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

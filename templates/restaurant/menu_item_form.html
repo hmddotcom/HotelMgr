@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Modifier{% else %}Ajouter{% endif %} un Plat{% endblock %}
+{% block header %}{% if object %}Modifier le plat{% else %}Nouveau Plat{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.nom|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.prix|as_crispy_field }}
+                        </div>
+                    </div>
+                    {{ form.categorie|as_crispy_field }}
+                    {{ form.image|as_crispy_field }}
+                    {{ form.description|as_crispy_field }}
+                    <div class="col-md-4">
+                        {{ form.temps_cuisson|as_crispy_field }}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'menu_item_list' %}" class="btn btn-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-save me-1"></i> Enregistrer le plat
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

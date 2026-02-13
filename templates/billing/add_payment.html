@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Ajouter un Paiement - {{ invoice.numero_facture }}{% endblock %}
+{% block header %}Enregistrer un Paiement{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0 pt-4">
+                <h5 class="fw-bold mb-0">Facture #{{ invoice.numero_facture }}</h5>
+                <p class="text-muted small">Client: {{ invoice.client.nom }}</p>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-light border mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Montant Total:</span>
+                        <span class="fw-bold">{{ invoice.montant_total }} {{ app_settings.currency|default:"FCFA"
+                            }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Déjà payé:</span>
+                        <span class="text-success">{{ invoice.montant_paye }} {{ app_settings.currency|default:"FCFA"
+                            }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Reste à payer:</span>
+                        <span class="text-danger fw-bold h5 mb-0">{{ invoice.reste_a_payer }} {{
+                            app_settings.currency|default:"FCFA" }}</span>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Montant du versement ({{ app_settings.currency|default:"FCFA"
+                            }})</label>
+                        <input type="number" step="0.01" name="amount" class="form-control form-control-lg"
+                            value="{{ invoice.reste_a_payer }}" min="0" max="{{ invoice.reste_a_payer }}" required>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-check me-1"></i> Valider le paiement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

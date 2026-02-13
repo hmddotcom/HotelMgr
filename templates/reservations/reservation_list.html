@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Réservations - Gestion Hôtelière{% endblock %}
+{% block header %}Réservations{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Liste des Réservations</h5>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReservationModal">
+            <i class="fa-solid fa-plus me-2"></i> Nouvelle Réservation
+        </button>
+    </div>
+    <div class="card-body p-0">
+        <!-- Barre de filtres intelligents -->
+        <div class="p-3 border-bottom">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="fw-bold">Filtres :</span>
+                <a href="?time=active" class="btn btn-sm {% if current_time_filter == 'active' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    👥 Présents
+                </a>
+                <a href="?statut=confirmee" class="btn btn-sm {% if current_statut_filter == 'confirmee' %}btn-success{% else %}btn-outline-success{% endif %}">
+                    📅 Confirmées
+                </a>
+                <a href="?statut=en_attente" class="btn btn-sm {% if current_statut_filter == 'en_attente' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                    ⏳ En attente
+                </a>
+                <a href="?time=today" class="btn btn-sm {% if current_time_filter == 'today' %}btn-info{% else %}btn-outline-info{% endif %}">
+                    📆 Aujourd'hui
+                </a>
+                <a href="?time=future" class="btn btn-sm {% if current_time_filter == 'future' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+                    🔮 Futures
+                </a>
+                <a href="{% url 'reservation_list' %}" class="btn btn-sm btn-outline-dark">
+                    🔄 Toutes
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Chambre</th>
+                        <th>Dates</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in reservations %}
+                    <tr>
+                        <td>#{{ res.id }}</td>
+                        <td class="fw-bold">{{ res.client.nom }}</td>
+                        <td><span class="badge bg-secondary">{{ res.chambre.numero }}</span></td>
+                        <td>{{ res.date_debut|date:"d/m/Y" }} <i class="fa-solid fa-arrow-right mx-1 text-muted"></i> {{ res.date_fin|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if res.statut == 'confirmee' %}<span class="badge bg-success">Confirmée</span>
+                            {% elif res.statut == 'active' %}<span class="badge bg-primary">Active</span>
+                            {% elif res.statut == 'en_attente' %}<span class="badge bg-warning text-dark">En attente</span>
+                            {% elif res.statut == 'annulee' %}<span class="badge bg-danger">Annulée</span>
+                            {% else %}<span class="badge bg-secondary">{{ res.get_statut_display }}</span>{% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'reservation_edit' res.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1 me-1" title="Modifier">
+                                <i class="fa-solid fa-pencil small"></i>
+                            </a>
+                            <a href="{% url 'reservation_delete' res.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1" title="Supprimer">
+                                <i class="fa-solid fa-trash-alt small"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Aucune réservation trouvée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nouvelle Réservation -->
+<div class="modal fade" id="addReservationModal" tabindex="-1" aria-labelledby="addReservationModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReservationModalLabel">Créer une Nouvelle Réservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'reservation_add' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% crispy form %}
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-save me-2"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fonction pour mettre à jour les chambres disponibles en fonction des dates
+function updateAvailableRooms() {
+    const dateDebut = document.getElementById('id_date_debut').value;
+    const dateFin = document.getElementById('id_date_fin').value;
+    
+    if (dateDebut && dateFin) {
+        // Envoyer une requête AJAX pour récupérer les chambres disponibles
+        fetch(`/reservations/chambres-disponibles/?date_debut=${dateDebut}&date_fin=${dateFin}`)
+            .then(response => response.json())
+            .then(data => {
+                const chambreSelect = document.getElementById('id_chambre');
+                const currentValue = chambreSelect.value;
+                
+                // Vider les options actuelles
+                chambreSelect.innerHTML = '';
+                
+                // Ajouter l'option vide
+                const emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = '---------';  
+                chambreSelect.appendChild(emptyOption);
+                
+                // Ajouter les chambres disponibles
+                data.chambres.forEach(chambre => {
+                    const option = document.createElement('option');
+                    option.value = chambre.id;
+                    option.textContent = `${chambre.numero} - ${chambre.categorie_nom} (${chambre.categorie_prix}€)`;
+                    if (chambre.id == currentValue) {
+                        option.selected = true;
+                    }
+                    chambreSelect.appendChild(option);
+                });
+                
+                // Si aucune chambre disponible, afficher un message
+                if (data.chambres.length === 0) {
+                    const noRoomsOption = document.createElement('option');
+                    noRoomsOption.value = '';
+                    noRoomsOption.textContent = 'Aucune chambre disponible pour ces dates';
+                    noRoomsOption.disabled = true;
+                    chambreSelect.appendChild(noRoomsOption);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des chambres:', error);
+            });
+    }
+}
+
+// Écouter les changements de dates
+document.addEventListener('DOMContentLoaded', function() {
+    const dateDebutInput = document.getElementById('id_date_debut');
+    const dateFinInput = document.getElementById('id_date_fin');
+    
+    if (dateDebutInput && dateFinInput) {
+        dateDebutInput.addEventListener('change', updateAvailableRooms);
+        dateFinInput.addEventListener('change', updateAvailableRooms);
+    }
+});
+</script>
+{% endblock %}

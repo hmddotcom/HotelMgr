@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Facturation{% endblock %}
+{% block header %}Facturation & Paiements{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Facture #</th>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td>{{ inv.id }}</td>
+                    <td>{{ inv.date_emission }}</td>
+                    <td>{{ inv.client.nom }}</td>
+                    <td class="fw-bold">{{ inv.montant_total }} €</td>
+                    <td>{{ inv.get_statut_display }}</td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-outline-dark"><i class="fa-solid fa-print"></i> PDF</a>
+                        {% if inv.statut != 'paye' %}
+                        <a href="{% url 'add_payment' inv.id %}" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-money-bill-wave"></i> Payer</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Aucune facture.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

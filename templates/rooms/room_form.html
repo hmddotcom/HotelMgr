@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+{% if object %}
+Modifier la Chambre
+{% else %}
+Ajouter une Chambre
+{% endif %}
+{% endblock %}
+
+{% block header %}
+{% if object %}
+Modifier la Chambre {{ object.numero }}
+{% else %}
+Ajouter une nouvelle Chambre
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+
+            <hr>
+            <button type="submit" class="btn btn-primary">
+                {% if object %}
+                <i class="fa-solid fa-save me-1"></i> Enregistrer les modifications
+                {% else %}
+                <i class="fa-solid fa-save me-1"></i> Créer la Chambre
+                {% endif %}
+            </button>
+            <a href="{% url 'room_list' %}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-times me-1"></i> Annuler
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}
