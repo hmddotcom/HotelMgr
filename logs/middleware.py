@@ -1,7 +1,9 @@
 from django.utils.deprecation import MiddlewareMixin
 from django.contrib.messages import get_messages
 from django.utils import timezone
+from django.core.exceptions import PermissionDenied
 from .models import ActivityLog
+from settings.models import Permission as RolePermission
 import threading
 
 # Thread-local storage for current user tracking
@@ -94,3 +96,100 @@ class MessageLoggingMiddleware(MiddlewareMixin):
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+class RolePermissionMiddleware(MiddlewareMixin):
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        user = getattr(request, 'user', None)
+        if not user or not user.is_authenticated:
+            return None
+
+        if user.is_superuser:
+            return None
+
+        path = request.path or ''
+        if (
+            path.startswith('/accounts/')
+            or path.startswith('/admin/')
+            or path.startswith('/static/')
+            or path.startswith('/media/')
+        ):
+            return None
+
+        module = self._get_module_from_path(path)
+        if not module:
+            return None
+
+        action = self._get_action_from_request(request)
+
+        role = getattr(user, 'role', None)
+        if not role:
+            raise PermissionDenied
+
+        if action == 'view':
+            if RolePermission.objects.filter(role=role, module=module).exists():
+                return None
+
+        if not RolePermission.objects.filter(role=role, module=module, action=action).exists():
+            raise PermissionDenied
+
+        return None
+
+    def _get_module_from_path(self, path: str):
+        if '/clients/' in path:
+            return 'clients'
+        if '/reservations/' in path:
+            return 'reservations'
+        if '/rooms/' in path:
+            return 'rooms'
+        if '/services/' in path:
+            return 'services'
+        if '/billing/' in path:
+            return 'billing'
+        if '/system/' in path:
+            return 'settings'
+        if '/restaurant/' in path or '/pos/' in path or '/api/' in path:
+            return 'restaurant'
+        if '/transport/' in path:
+            return 'transport'
+        if '/complaints/' in path:
+            return 'complaints'
+        if '/logs/' in path:
+            return 'logs'
+        if '/reports/' in path:
+            return 'reports'
+        return None
+
+    def _get_action_from_request(self, request):
+        path = (request.path or '').lower()
+
+        if '/pos/' in path:
+            return 'add'
+
+        if (
+            '/add/' in path
+            or '/new/' in path
+            or 'create' in path
+            or 'add_payment' in path
+            or 'place-order' in path
+            or 'create-order' in path
+        ):
+            return 'add'
+
+        if (
+            '/edit/' in path
+            or '/update/' in path
+            or 'check-in' in path
+            or 'check-out' in path
+            or '/start/' in path
+            or '/complete/' in path
+            or '/validate/' in path
+        ):
+            return 'edit'
+
+        if '/delete/' in path or '/remove/' in path:
+            return 'delete'
+
+        if request.method not in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
+            return 'edit'
+
+        return 'view'

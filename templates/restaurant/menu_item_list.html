@@ -7,9 +7,11 @@
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
         <h5 class="mb-0 fw-bold text-primary">Plats & Menu</h5>
+        {% if 'add' in allowed_actions.restaurant %}
         <a href="{% url 'menu_item_add' %}" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-plus me-1"></i> Ajouter un plat
         </a>
+        {% endif %}
     </div>
     <div class="card-body">
         <div class="row g-4">
@@ -36,16 +38,22 @@
                             <small class="text-muted">
                                 <i class="fa-solid fa-clock me-1 text-warning"></i> {{ item.temps_cuisson }} min
                             </small>
+                            {% if 'edit' in allowed_actions.restaurant or 'delete' in allowed_actions.restaurant %}
                             <div class="btn-group btn-group-sm">
+                                {% if 'edit' in allowed_actions.restaurant %}
                                 <a href="{% url 'menu_item_edit' item.pk %}"
                                     class="btn btn-outline-secondary px-2 border-0">
                                     <i class="fa-solid fa-edit"></i>
                                 </a>
+                                {% endif %}
+                                {% if 'delete' in allowed_actions.restaurant %}
                                 <a href="{% url 'menu_item_delete' item.pk %}"
                                     class="btn btn-outline-danger px-2 border-0">
                                     <i class="fa-solid fa-trash"></i>
                                 </a>
+                                {% endif %}
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="card-footer bg-light border-0 py-2">

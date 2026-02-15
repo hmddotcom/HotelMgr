@@ -9,9 +9,11 @@
         <h3 class="fw-bold">Historique des Commandes</h3>
     </div>
     <div class="col-md-6 text-end">
+        {% if 'add' in allowed_actions.restaurant %}
         <a href="{% url 'pos' %}" class="btn btn-primary shadow-sm">
             <i class="fa-solid fa-plus me-2"></i>Nouvelle Commande (POS)
         </a>
+        {% endif %}
     </div>
 </div>
 

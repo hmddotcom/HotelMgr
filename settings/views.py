@@ -4,11 +4,18 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from .models import CustomUser, Role, Permission, AppSettings
 from django import forms
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}), required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop('request_user', None)
+        super().__init__(*args, **kwargs)
+        if not (self.request_user and self.request_user.is_superuser):
+            self.fields.pop('is_staff', None)
     
     class Meta:
         model = CustomUser
@@ -29,14 +36,27 @@ class UserListView(LoginRequiredMixin, ListView):
     template_name = 'settings/users_list.html'
     context_object_name = 'users'
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.user.is_superuser:
+            return qs
+        return qs.filter(is_superuser=False)
+
 class UserCreateView(LoginRequiredMixin, CreateView):
     model = CustomUser
     form_class = UserForm
     template_name = 'settings/user_form.html'
     success_url = reverse_lazy('user_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request_user'] = self.request.user
+        return kwargs
     
     def form_valid(self, form):
         user = form.save(commit=False)
+        if not self.request.user.is_superuser:
+            user.is_staff = False
         if form.cleaned_data.get('password'):
             user.set_password(form.cleaned_data['password'])
         else:
@@ -49,9 +69,16 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
     form_class = UserForm
     template_name = 'settings/user_form.html'
     success_url = reverse_lazy('user_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request_user'] = self.request.user
+        return kwargs
     
     def form_valid(self, form):
         user = form.save(commit=False)
+        if not self.request.user.is_superuser:
+            user.is_staff = False
         if form.cleaned_data.get('password'):
             user.set_password(form.cleaned_data['password'])
         user.save()
@@ -60,6 +87,8 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 @login_required
 def roles_permissions_view(request):
     """View for managing roles and permissions"""
+    if not request.user.is_superuser:
+        raise PermissionDenied
     roles = Role.objects.prefetch_related('permissions').all()
     
     if request.method == 'POST':

@@ -51,12 +51,14 @@
                                 <label class="form-check-label">Compte actif</label>
                             </div>
                         </div>
+                        {% if form.is_staff %}
                         <div class="col-md-6 mb-3">
                             <div class="form-check">
                                 {{ form.is_staff }}
                                 <label class="form-check-label">Accès admin</label>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{% url 'user_list' %}" class="btn btn-secondary">Annuler</a>

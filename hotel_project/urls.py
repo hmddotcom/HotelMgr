@@ -1,6 +1,9 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from hotel_project.views import DashboardView, POSView
+import sys
+
+admin.site.has_permission = lambda request: request.user.is_active and request.user.is_superuser
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,7 +27,12 @@ urlpatterns = [
 # Serve media files in development
 from django.conf import settings as django_settings
 from django.conf.urls.static import static
+from django.views.static import serve as media_serve
 
 if django_settings.DEBUG:
     urlpatterns += static(django_settings.MEDIA_URL, document_root=django_settings.MEDIA_ROOT)
+elif 'runserver' in sys.argv:
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', media_serve, {'document_root': django_settings.MEDIA_ROOT}),
+    ]
 

@@ -26,9 +26,13 @@ class Permission(models.Model):
         ('rooms', 'Chambres'),
         ('reservations', 'Réservations'),
         ('restaurant', 'Restauration'),
+        ('dining', 'Restauration (Dining)'),
         ('transport', 'Transport'),
         ('complaints', 'Plaintes'),
         ('billing', 'Facturation'),
+        ('reports', 'Rapports'),
+        ('affiliations', 'Affiliations'),
+        ('services', 'Services'),
         ('settings', 'Système'),
         ('logs', 'Logs & Historique'),
     ]
