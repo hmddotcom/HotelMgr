@@ -1,5 +1,6 @@
 from django.views.generic import ListView, CreateView
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Complaint
 from django import forms
 
@@ -14,12 +15,12 @@ class ComplaintForm(forms.ModelForm):
             'statut': forms.Select(attrs={'class': 'form-select'}),
         }
 
-class ComplaintListView(ListView):
+class ComplaintListView(LoginRequiredMixin, ListView):
     model = Complaint
     template_name = 'complaints/complaint_list.html'
     context_object_name = 'complaints'
 
-class ComplaintCreateView(CreateView):
+class ComplaintCreateView(LoginRequiredMixin, CreateView):
     model = Complaint
     form_class = ComplaintForm
     template_name = 'complaints/complaint_form.html'

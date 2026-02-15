@@ -73,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'settings.context_processors.app_settings_processor',
             ],
         },
     },
@@ -140,3 +141,7 @@ X_FRAME_OPTIONS = 'DENY'
 
 # Use environment variable for secret key in production
 SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'

@@ -98,6 +98,7 @@
 
     <div class="container-fluid">
         <div class="row">
+            {% if user.is_authenticated %}
             <!-- Sidebar -->
             <div class="col-md-2 sidebar p-0">
                 <div class="brand text-center">
@@ -238,9 +239,11 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <!-- Main Content -->
-            <div class="col-md-10 main-content">
+            <div class="{% if user.is_authenticated %}col-md-10{% else %}col-12{% endif %} main-content">
+                {% if user.is_authenticated %}
                 <!-- Navbar -->
                 <nav class="navbar navbar-expand-lg navbar-light bg-white rounded shadow-sm mb-4">
                     <div class="container-fluid">
@@ -254,7 +257,7 @@
                             <div class="dropdown">
                                 <button class="btn btn-light dropdown-toggle" type="button" id="userDropdown"
                                     data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-user-circle me-1"></i> Admin
+                                    <i class="fa-solid fa-user-circle me-1"></i> {{ request.user.username }}
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="#">Profil</a></li>
@@ -268,6 +271,7 @@
                         </div>
                     </div>
                 </nav>
+                {% endif %}
 
                 <!-- Page Content -->
                 {% block content %}
@@ -293,7 +297,10 @@
                 second: '2-digit'
             };
             const dateTimeString = now.toLocaleDateString('fr-FR', options);
-            document.getElementById('currentDateTime').textContent = dateTimeString;
+            const el = document.getElementById('currentDateTime');
+            if (el) {
+                el.textContent = dateTimeString;
+            }
         }
 
         // Update immediately and then every second

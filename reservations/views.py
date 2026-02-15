@@ -1,5 +1,6 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Reservation
 from .forms import ReservationForm
 from clients.models import Client
@@ -8,7 +9,7 @@ from django import forms
 from django.utils import timezone
 from datetime import timedelta
 
-class ReservationListView(ListView):
+class ReservationListView(LoginRequiredMixin, ListView):
     model = Reservation
     template_name = 'reservations/reservation_list.html'
     context_object_name = 'reservations'
@@ -47,7 +48,7 @@ class ReservationListView(ListView):
         context['current_time_filter'] = self.request.GET.get('time', '')
         return context
 
-class ReservationCreateView(CreateView):
+class ReservationCreateView(LoginRequiredMixin, CreateView):
     model = Reservation
     form_class = ReservationForm
     template_name = 'reservations/reservation_form.html'
@@ -63,10 +64,12 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
 
 from affiliations.models import Affiliation
 from services.models import RoomCleaning
 
+@login_required
 def check_in_reservation(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
     
@@ -87,6 +90,7 @@ def check_in_reservation(request, pk):
     return redirect('reservation_list')
 
 
+@login_required
 def chambres_disponibles_api(request):
     """API endpoint pour récupérer les chambres disponibles pour des dates données"""
     date_debut_str = request.GET.get('date_debut')
@@ -140,6 +144,7 @@ def chambres_disponibles_api(request):
 
 from affiliations.models import Affiliation
 
+@login_required
 def check_out_reservation(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
     
@@ -185,13 +190,13 @@ def check_out_reservation(request, pk):
         
     return redirect('reservation_list')
 
-class ReservationUpdateView(UpdateView):
+class ReservationUpdateView(LoginRequiredMixin, UpdateView):
     model = Reservation
     form_class = ReservationForm
     template_name = 'reservations/reservation_form.html'
     success_url = reverse_lazy('reservation_list')
 
-class ReservationDeleteView(DeleteView):
+class ReservationDeleteView(LoginRequiredMixin, DeleteView):
     model = Reservation
     template_name = 'reservations/reservation_confirm_delete.html'
     success_url = reverse_lazy('reservation_list')

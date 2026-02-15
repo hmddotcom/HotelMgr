@@ -4,12 +4,13 @@ from django.views.generic.edit import DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Q
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Client
 from reservations.models import Reservation
 from billing.models import Invoice
 from .forms import ClientForm
 
-class ClientListView(ListView):
+class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'clients/client_list.html'
     context_object_name = 'clients'
@@ -22,13 +23,13 @@ class ClientListView(ListView):
             )
         return Client.objects.all().order_by('-created_at')
 
-class ClientCreateView(CreateView):
+class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     fields = ['nom', 'email', 'telephone', 'piece_identite', 'adresse', 'solde']
     template_name = 'clients/client_form.html'
     success_url = reverse_lazy('client_list')
 
-class ClientUpdateView(UpdateView):
+class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name = 'clients/client_form.html'
@@ -44,7 +45,7 @@ class ClientUpdateView(UpdateView):
         messages.error(self.request, "Le formulaire contient des erreurs. Veuillez corriger les champs indiqués.")
         return super().form_invalid(form)
 
-class ClientDetailView(DetailView):
+class ClientDetailView(LoginRequiredMixin, DetailView):
     model = Client
     template_name = 'clients/client_detail.html'
     
@@ -55,7 +56,7 @@ class ClientDetailView(DetailView):
         context['invoices'] = client.invoice_set.all().order_by('-created_at')
         return context
 
-class ClientDeleteView(DeleteView):
+class ClientDeleteView(LoginRequiredMixin, DeleteView):
     model = Client
     template_name = 'clients/client_confirm_delete.html'
     success_url = reverse_lazy('client_list')

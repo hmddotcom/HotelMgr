@@ -4,8 +4,11 @@ from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Invoice, InvoiceLine
 
+@login_required
 def add_payment(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
     if request.method == 'POST':
@@ -20,7 +23,7 @@ def add_payment(request, invoice_id):
     return render(request, 'billing/add_payment.html', {'invoice': invoice})
 
 
-class InvoiceListView(ListView):
+class InvoiceListView(LoginRequiredMixin, ListView):
     model = Invoice
     template_name = 'billing/invoice_list.html'
     context_object_name = 'invoices'
@@ -32,7 +35,7 @@ InvoiceLineFormSet = inlineformset_factory(
     can_delete=True
 )
 
-class InvoiceCreateView(CreateView):
+class InvoiceCreateView(LoginRequiredMixin, CreateView):
     model = Invoice
     fields = ['client', 'reservation']
     template_name = 'billing/invoice_form.html'
@@ -57,7 +60,7 @@ class InvoiceCreateView(CreateView):
         else:
             return self.render_to_response(self.get_context_data(form=form))
 
-class InvoiceUpdateView(UpdateView):
+class InvoiceUpdateView(LoginRequiredMixin, UpdateView):
     model = Invoice
     fields = ['client', 'reservation']
     template_name = 'billing/invoice_form.html'

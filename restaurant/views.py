@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Order, OrderItem, MenuItem
 from reservations.models import Reservation
 from django.contrib.auth.decorators import login_required
@@ -80,42 +81,43 @@ def get_pending_orders_api(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-class OrderListView(ListView):
+class OrderListView(LoginRequiredMixin, ListView):
     model = Order
     template_name = 'restaurant/order_list.html'
     context_object_name = 'orders'
     ordering = ['-date']
 
-class OrderCreateView(CreateView):
+class OrderCreateView(LoginRequiredMixin, CreateView):
     model = Order
     fields = ['type_commande', 'client', 'chambre', 'nom_client_passage', 'numero_table', 'statut', 'mode_paiement']
     template_name = 'restaurant/order_form.html'
     success_url = reverse_lazy('order_list')
 
 # MenuItem CRUD
-class MenuItemListView(ListView):
+class MenuItemListView(LoginRequiredMixin, ListView):
     model = MenuItem
     template_name = 'restaurant/menu_item_list.html'
     context_object_name = 'items'
     ordering = ['categorie', 'nom']
 
-class MenuItemCreateView(CreateView):
+class MenuItemCreateView(LoginRequiredMixin, CreateView):
     model = MenuItem
     fields = ['nom', 'prix', 'categorie', 'image', 'description', 'temps_cuisson']
     template_name = 'restaurant/menu_item_form.html'
     success_url = reverse_lazy('menu_item_list')
 
-class MenuItemUpdateView(UpdateView):
+class MenuItemUpdateView(LoginRequiredMixin, UpdateView):
     model = MenuItem
     fields = ['nom', 'prix', 'categorie', 'image', 'description', 'temps_cuisson']
     template_name = 'restaurant/menu_item_form.html'
     success_url = reverse_lazy('menu_item_list')
 
-class MenuItemDeleteView(DeleteView):
+class MenuItemDeleteView(LoginRequiredMixin, DeleteView):
     model = MenuItem
     template_name = 'restaurant/menu_item_confirm_delete.html'
     success_url = reverse_lazy('menu_item_list')
 
+@login_required
 def order_details_api(request, order_id):
     try:
         order = get_object_or_404(Order, pk=order_id)

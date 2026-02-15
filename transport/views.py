@@ -1,5 +1,6 @@
 from django.views.generic import ListView, CreateView
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import TransportRequest
 from django import forms
 
@@ -16,12 +17,12 @@ class TransportForm(forms.ModelForm):
             'statut': forms.Select(attrs={'class': 'form-select'}),
         }
 
-class TransportListView(ListView):
+class TransportListView(LoginRequiredMixin, ListView):
     model = TransportRequest
     template_name = 'transport/transport_list.html'
     context_object_name = 'requests'
 
-class TransportCreateView(CreateView):
+class TransportCreateView(LoginRequiredMixin, CreateView):
     model = TransportRequest
     form_class = TransportForm
     template_name = 'transport/transport_form.html'

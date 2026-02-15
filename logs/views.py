@@ -1,9 +1,10 @@
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from .models import ActivityLog
-from .permissions import has_log_permission
+from .permissions import has_log_permission, require_log_permission
 import csv
 from django.http import HttpResponse
 
@@ -83,6 +84,8 @@ class LogDetailView(LoginRequiredMixin, DetailView):
             raise PermissionDenied("Vous n'avez pas la permission de consulter les logs.")
         return super().dispatch(request, *args, **kwargs)
 
+@login_required
+@require_log_permission('view')
 def export_logs_csv(request):
     """Export filtered logs to CSV"""
     # Get filtered queryset (reuse LogListView logic)

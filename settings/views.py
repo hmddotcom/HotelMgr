@@ -1,5 +1,6 @@
 from django.views.generic import ListView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -23,12 +24,12 @@ class UserForm(forms.ModelForm):
             'is_staff': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-class UserListView(ListView):
+class UserListView(LoginRequiredMixin, ListView):
     model = CustomUser
     template_name = 'settings/users_list.html'
     context_object_name = 'users'
 
-class UserCreateView(CreateView):
+class UserCreateView(LoginRequiredMixin, CreateView):
     model = CustomUser
     form_class = UserForm
     template_name = 'settings/user_form.html'
@@ -43,7 +44,7 @@ class UserCreateView(CreateView):
         user.save()
         return super().form_valid(form)
 
-class UserUpdateView(UpdateView):
+class UserUpdateView(LoginRequiredMixin, UpdateView):
     model = CustomUser
     form_class = UserForm
     template_name = 'settings/user_form.html'
@@ -56,6 +57,7 @@ class UserUpdateView(UpdateView):
         user.save()
         return super().form_valid(form)
 
+@login_required
 def roles_permissions_view(request):
     """View for managing roles and permissions"""
     roles = Role.objects.prefetch_related('permissions').all()
@@ -71,6 +73,7 @@ def roles_permissions_view(request):
     }
     return render(request, 'settings/roles_permissions.html', context)
 
+@login_required
 def branding_view(request):
     """View for customizing app appearance"""
     settings_obj = AppSettings.load()
@@ -91,6 +94,7 @@ def branding_view(request):
     
     return render(request, 'settings/branding.html', {'settings': settings_obj})
 
+@login_required
 def general_settings_view(request):
     """View for general app settings"""
     settings_obj = AppSettings.load()
